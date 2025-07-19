@@ -27,6 +27,31 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
+      transition: all 1s ease-in-out;
+    }
+
+    .container.blur {
+      filter: blur(5px);
+      opacity: 0.3;
+      transform: scale(0.95);
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 220, 224, 0.8);
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      pointer-events: none;
+    }
+
+    .overlay.show {
+      opacity: 1;
     }
 
     .box {
@@ -67,29 +92,130 @@
       position: absolute;
     }
 
-    .response {
-      margin-top: 30px;
-      font-size: 1.3rem;
-      color: #5f27cd;
-      display: none;
+    .envelope-wrapper {
+      position: fixed;
+      top: 20%;
+      left: 20%;
+      transform: translate(0, 0) scale(0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      transition: all 1s ease-in-out;
+      opacity: 0;
+    }
+
+    .envelope-wrapper.show {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .envelope {
+      width: 280px;
+      height: 180px;
+      background: #fff;
+      border: 3px solid #ff4f81;
+      border-radius: 8px;
+      position: relative;
+      overflow: visible;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      transition: all 0.8s ease-in-out;
+    }
+
+    .envelope::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 140px solid transparent;
+      border-right: 140px solid transparent;
+      border-bottom: 80px solid #ff4f81;
+      transform: translateY(0);
+      transition: transform 1s ease-in-out 0.5s;
+      z-index: 4;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .envelope.open::before {
+      transform: translateY(-60px);
+    }
+
+    .envelope-content {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition: all 0.8s ease-in-out;
+      z-index: 2;
+    }
+
+    .envelope-content.show {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .gif {
+      width: 200px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transform: translateY(0);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .gif.bounce {
+      animation: bounceOut 0.8s ease-in-out;
+    }
+
+    @keyframes bounceOut {
+      0% { transform: translateY(0) scale(0.8); }
+      50% { transform: translateY(-20px) scale(1.1); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .muak {
+      font-size: 1.5rem;
+      color: #d63384;
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease-in-out;
+    }
+
+    .muak.show {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
 <body>
   <canvas id="hearts"></canvas>
+  <div class="overlay" id="overlay"></div>
 
-  <div class="container">
+  <div class="container" id="container">
     <div class="box">
       <h1>¿Quieres ser parte de mi vida, más de lo que ya eres? 💖</h1>
-      <button class="btn yes" onclick="showResponse()">Sí ❤️</button>
-      <button class="btn no" id="noBtn">No jodas oe 😡 </button>
-      <div class="response" id="responseText"></div>
+      <button class="btn yes" onclick="showEnvelope()">Sí ❤️</button>
+      <button class="btn no" id="noBtn">No 😢</button>
     </div>
   </div>
 
-  <!-- Confetti JS -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <div class="envelope-wrapper" id="envelopeWrapper">
+    <div class="envelope" id="envelope">
+      <div class="envelope-content" id="envelopeContent">
+        <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWg3aGtqYmFlNzU1YjAyYThjcTZsbmNpbzViNWNnYXY5bjd6aXhkMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5WKa9xp9o2kxz14Eem/giphy.gif" class="gif" id="gifCat" alt="Yippee Cat" />
+      </div>
+    </div>
+    <div class="muak" id="muakText">MUAAAAAAAAAAAK me encantas ❤️</div>
+  </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script>
     // Corazones flotantes
     const canvas = document.getElementById("hearts");
@@ -98,7 +224,6 @@
     canvas.height = window.innerHeight;
 
     const hearts = [];
-
     for (let i = 0; i < 40; i++) {
       hearts.push({
         x: Math.random() * canvas.width,
@@ -134,22 +259,53 @@
       noBtn.style.top = `${y}px`;
     });
 
-    // Mostrar respuesta y lanzar confetti
-    function showResponse() {
-      const response = document.getElementById("responseText");
-      response.textContent = "te quiedo mucho muchote ";
-      response.textContent = "MUAAAAAAAAAAAAAAAAAK 💘";
-      response.style.display = "block";
+    // Mostrar sobre, abrirlo, mostrar gif y texto con animación secuencial
+    function showEnvelope() {
+      const container = document.getElementById("container");
+      const overlay = document.getElementById("overlay");
+      const wrapper = document.getElementById("envelopeWrapper");
+      const envelope = document.getElementById("envelope");
+      const envelopeContent = document.getElementById("envelopeContent");
+      const gif = document.getElementById("gifCat");
+      const text = document.getElementById("muakText");
 
-      // Confetti animado
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-      });
+      // Paso 0: Opacar el fondo y mostrar overlay (0.5s)
+      container.classList.add("blur");
+      overlay.classList.add("show");
+
+      // Paso 1: Mostrar y agrandar el sobre en el centro (1s)
+      setTimeout(() => {
+        wrapper.classList.add("show");
+      }, 500);
+      
+      // Paso 2: Abrir el sobre después de 2s
+      setTimeout(() => {
+        envelope.classList.add("open");
+      }, 2000);
+
+      // Paso 3: Mostrar el contenido del sobre después de 3s
+      setTimeout(() => {
+        envelopeContent.classList.add("show");
+        gif.classList.add("bounce");
+      }, 3000);
+
+      // Paso 4: Mostrar el texto después de 3.7s
+      setTimeout(() => {
+        text.classList.add("show");
+      }, 3700);
+
+      // Confetti al final de la animación
+      setTimeout(() => {
+        confetti({
+          particleCount: 300,
+          spread: 120,
+          origin: { y: 0.6 },
+          colors: ['#ff4f81', '#e94474', '#ff69b4', '#ffc0cb']
+        });
+      }, 4000);
     }
 
-    // Ajustar canvas al redimensionar
+    // Resize canvas
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
