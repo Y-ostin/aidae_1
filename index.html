@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Para ti ❤️</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffdce0;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .box {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #ff4f81;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      margin: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .yes {
+      background-color: #ff4f81;
+      color: white;
+    }
+
+    .yes:hover {
+      background-color: #e94474;
+    }
+
+    .no {
+      background-color: #ccc;
+      color: black;
+      position: absolute;
+    }
+
+    .response {
+      margin-top: 30px;
+      font-size: 1.3rem;
+      color: #5f27cd;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="hearts"></canvas>
+
+  <div class="container">
+    <div class="box">
+      <h1>¿Quieres ser parte de mi vida, más de lo que ya eres? 💖</h1>
+      <button class="btn yes" onclick="showResponse()">Sí ❤️</button>
+      <button class="btn no" id="noBtn">No jodas oe 😡 </button>
+      <div class="response" id="responseText"></div>
+    </div>
+  </div>
+
+  <!-- Confetti JS -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <script>
+    // Corazones flotantes
+    const canvas = document.getElementById("hearts");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const hearts = [];
+
+    for (let i = 0; i < 40; i++) {
+      hearts.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 15 + 5,
+        speed: Math.random() * 1 + 0.5
+      });
+    }
+
+    function drawHearts() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hearts.forEach(heart => {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(255, 105, 180, 0.7)";
+        ctx.font = `${heart.size}px Arial`;
+        ctx.fillText("❤", heart.x, heart.y);
+        heart.y -= heart.speed;
+        if (heart.y < -10) {
+          heart.y = canvas.height + 10;
+          heart.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(drawHearts);
+    }
+    drawHearts();
+
+    // Botón NO que huye
+    const noBtn = document.getElementById("noBtn");
+    noBtn.addEventListener("mouseover", () => {
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 50);
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+    });
+
+    // Mostrar respuesta y lanzar confetti
+    function showResponse() {
+      const response = document.getElementById("responseText");
+      response.textContent = "te quiedo mucho muchote ";
+      response.textContent = "MUAAAAAAAAAAAAAAAAAK 💘";
+      response.style.display = "block";
+
+      // Confetti animado
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+      });
+    }
+
+    // Ajustar canvas al redimensionar
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
